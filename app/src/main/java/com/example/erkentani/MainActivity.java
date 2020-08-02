@@ -23,8 +23,10 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.Set;
@@ -85,6 +87,8 @@ public class MainActivity extends AppCompatActivity {
                             if(index==position){
                                 mdevice=dvc;
                                 Log.println(Log.ERROR,"DEV", String.valueOf(position));
+                                String deviceName= mdevice.getName();
+                                Log.println(Log.ERROR,"DEV", deviceName);
                                 ConnectThread clientThread= new ConnectThread(mdevice);//burda threadi mdevice ile cagir. secilen item mdevice.
                                 clientThread.start();
                                 break;
@@ -100,13 +104,13 @@ public class MainActivity extends AppCompatActivity {
     //CLIENT THREAD*** CLIENT THREAD*** CLIENT THREAD*** CLIENT THREAD*** CLIENT THREAD*** CLIENT THREAD*** CLIENT THREAD*** CLIENT THREAD*** CLIENT THREAD***
     private class ConnectThread extends Thread {
         private final BluetoothSocket mmSocket;
-        private final BluetoothDevice mmDevice;
+        private final BluetoothDevice mmDevice; //Device that we are trying to make connection with(Remote Device)
 
         public ConnectThread(BluetoothDevice device) {
             // Use a temporary object that is later assigned to mmSocket
             // because mmSocket is final.
             BluetoothSocket tmp = null;
-            mmDevice = device;
+            mmDevice = device; //device is the remoce device that we chose by clicking.
 
             try {
                 // Get a BluetoothSocket to connect with the given BluetoothDevice.
@@ -173,7 +177,7 @@ public class MainActivity extends AppCompatActivity {
         public ConnectedThread(BluetoothSocket socket) throws IOException {
             mmSocket = socket;
             InputStream tmpIn = null;
-
+            Log.println(Log.ERROR,"DEV","IN THE CONSTRUCTOR OF CONNECTEDTHREAD");
             // Get the input and output streams; using temp objects because
             // member streams are final.
             try {
@@ -186,32 +190,22 @@ public class MainActivity extends AppCompatActivity {
         }
 
         public void run() {
-            int byteCount = 0;
-            try {
-                byteCount = mmInStream.available();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            if (byteCount > 0) {
-                byte[] rawBytes = new byte[byteCount];
-                try {
-                    mmInStream.read(rawBytes);
-                } catch (IOException e) {
-                    e.printStackTrace();
+            //byte[] buffer = new byte[1024];
+            //int bytes;
+            BufferedReader br = new BufferedReader(new InputStreamReader(mmInStream));
+            Log.i("[THREAD-CT]","Starting thread");
+                try{
+                    // bytes = mmInStream.read(buffer);
+                    String resp = br.readLine();
+                    Log.i("[THREAD-CT]",resp);
+                    //viewData.setText(resp);
+                    //Transfer these data to the UI thread
+
+                }catch(IOException e){
+
                 }
-                String string = null;
-                try {
-                    string = new String(rawBytes, "UTF-8");
-                } catch (UnsupportedEncodingException e) {
-                    e.printStackTrace();
-                }
-                final String finalString = string;
-                handler.post(new Runnable() {
-                    public void run() {
-                        viewData.append(finalString);
-                    }
-                });
-            }
+
+            Log.i("[THREAD-CT]","While loop ended");
         }
 
         // Call this method from the main activity to shut down the connection.
@@ -232,7 +226,7 @@ public class MainActivity extends AppCompatActivity {
     private void manageMyConnectedSocket(BluetoothSocket mmSocket) throws IOException {
         Log.println(Log.ERROR,"DEV","I AM IN THE MANAGEMYCONNECTEDSOCKET METHOD, SEEMS INTERESTING");
         //MyBluetoothService.ConnectedThread dataThread= new MyBluetoothService.ConnectedThread(mmSocket);
-        ConnectedThread dataThread= new ConnectedThread(mmSocket);//burda threadi mdevice ile cagir. secilen item mdevice.
+        ConnectedThread dataThread= new ConnectedThread(mmSocket);//threadi mmSocket ile cagir.
         dataThread.start();
     }
     //***MANAGE CONNECTED SOCKET ******MANAGE CONNECTED SOCKET ******MANAGE CONNECTED SOCKET ******MANAGE CONNECTED SOCKET ******MANAGE CONNECTED SOCKET ***
