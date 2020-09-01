@@ -42,6 +42,7 @@ public class MainActivity extends AppCompatActivity {
     int requestCodeEnable;
     private static final String NAME= "SelfHealth";
     private static final UUID MY_UUID= UUID.fromString("00001101-0000-1000-8000-00805f9b34fb");
+    String resp="";
 
 
     @Override
@@ -196,11 +197,13 @@ public class MainActivity extends AppCompatActivity {
             Log.i("[THREAD-CT]","Starting thread");
                 try{
                     // bytes = mmInStream.read(buffer);
-                    String resp = br.readLine();
-                    Log.i("[THREAD-CT]",resp);
-                    //viewData.setText(resp);
-                    //Transfer these data to the UI thread
-
+                    //while(true) {
+                        resp = br.readLine();
+                        Log.i("[THREAD-CT]", resp);
+                        runOnUiThread(action);
+                        //viewData.setText(resp);
+                        //Transfer these data to the UI thread
+                    //}
                 }catch(IOException e){
 
                 }
@@ -221,6 +224,12 @@ public class MainActivity extends AppCompatActivity {
 
     //***CONNECTED THREAD ******CONNECTED THREAD ******CONNECTED THREAD ******CONNECTED THREAD ******CONNECTED THREAD ******CONNECTED THREAD ******CONNECTED THREAD ***
 
+    private Runnable action = new Runnable() {
+        @Override
+        public void run() {
+            viewData.setText(resp);
+        }
+    };
 
     //***MANAGE CONNECTED SOCKET ******MANAGE CONNECTED SOCKET ******MANAGE CONNECTED SOCKET ******MANAGE CONNECTED SOCKET ******MANAGE CONNECTED SOCKET ***
     private void manageMyConnectedSocket(BluetoothSocket mmSocket) throws IOException {
